@@ -3,8 +3,9 @@ Generic API client for use against all Bokbasen APIs where no spesific SDK is im
 
 The HTTP client is simple in use and you must implement API spesific functionality yourself. But it provides a standard interface to do request against Bokbasen APIs and allow you to use the Login SDK handling any complexity related to authentication.
 
+First create a Login object [see php-sdk-auth for details](https://github.com/Bokbasen/php-sdk-auth)
+
 ```php
-//First create a Login object [see php-sdk-auth](https://github.com/Bokbasen/php-sdk-auth)
 use Bokbasen\Auth\Login;
 try{
 	$login = new Login('my_username', 'my_password');
@@ -29,13 +30,11 @@ try{
 	
 	//Execute POST request 
 	$data = '<test>3</test>'
-	$response = $client->post('/xmlReceiver',$data,HttpRequestOptions::CONTENT_TYPE_XML);	
+	$response = $client->post('/xmlReceiver',$data,HttpRequestOptions::CONTENT_TYPE_XML);
+	
 	//Execute PUT request
 	$data = '<test>3</test>'
 	$response = $client->put('/xmlReceiver',$data,HttpRequestOptions::CONTENT_TYPE_XML);
-	
-	
-	
 } catch(\Exception $e){
 	//error handling
 }
