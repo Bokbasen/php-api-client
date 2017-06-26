@@ -71,9 +71,9 @@ class Client
     public function __construct(Login $login, $baseUrl, LoggerInterface $logger = null, HttpClient $httpClient = null)
     {
         $this->login = $login;
-        $this->setHttpClient($httpClient);
         $this->baseUrl = $baseUrl;
-        $this->logger = $logger;
+        $this->setLogger($logger);
+        $this->setHttpClient($httpClient);
         
         if (empty($this->baseUrl) || strpos($this->baseUrl, 'http') !== 0) {
             throw new BokbasenApiClientException('Base URL invalid or empty');
@@ -96,9 +96,7 @@ class Client
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
         }
-        if (! is_null($this->logger)) {
-            $this->logger->debug('Executing POST request: ' . $this->buildUrl($relativePath) . ' with data: ' . $encodedData);
-        }
+        
         return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_POST, $additionalHeaders, $encodedData, $this->buildUrl($relativePath), $authenticate);
     }
 
@@ -118,9 +116,7 @@ class Client
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
         }
-        if (! is_null($this->logger)) {
-            $this->logger->debug('Executing PUT request: ' . $this->buildUrl($relativePath) . ' with data: ' . $encodedData);
-        }
+        
         return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_PUT, $additionalHeaders, $encodedData, $this->buildUrl($relativePath));
     }
 
@@ -162,9 +158,7 @@ class Client
         if (! empty($accept)) {
             $additionalHeaders['Accept'] = $accept;
         }
-        if (! is_null($this->logger)) {
-            $this->logger->debug('Executing GET request: ' . $this->buildUrl($relativePath));
-        }
+        
         return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_GET, $additionalHeaders, null, $this->buildUrl($relativePath));
     }
 
@@ -184,6 +178,10 @@ class Client
             $headers = $this->makeHeadersArray($additionalHeaders);
         } else {
             $headers = $additionalHeaders;
+        }
+        
+        if (! is_null($this->logger)) {
+            $this->logger->debug(sprintf('Executing HTTP %s request to %s with data %s ', $method, $completeUrl, $encodedData));
         }
         
         $request = $this->getMessageFactory()->createRequest($method, $completeUrl, $headers, $encodedData);
@@ -206,6 +204,15 @@ class Client
         } else {
             $this->httpClient = $httpClient;
         }
+    }
+
+    /**
+     *
+     * @param LoggerInterface $logger            
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
 
     /**
