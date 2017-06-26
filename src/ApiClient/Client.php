@@ -4,6 +4,7 @@ namespace Bokbasen\ApiClient;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\MessageFactoryDiscovery;
 use Http\Client\HttpClient;
+use Http\Message\MessageFactory;
 use Psr\Http\Message\ResponseInterface;
 use Bokbasen\Auth\Login;
 use Psr\Log\LoggerInterface;
@@ -68,7 +69,7 @@ class Client
      * @param LoggerInterface $logger            
      * @param HttpClient $httpClient            
      */
-    public function __construct(Login $login, $baseUrl, LoggerInterface $logger = null, HttpClient $httpClient = null)
+    public function __construct(Login $login, string $baseUrl, LoggerInterface $logger = null, HttpClient $httpClient = null)
     {
         $this->login = $login;
         $this->baseUrl = $baseUrl;
@@ -91,7 +92,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function post($relativePath, $encodedData, $contentType, array $additionalHeaders = [], $authenticate = true)
+    public function post(string $relativePath, string $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
     {
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
@@ -111,7 +112,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function put($relativePath, $encodedData, $contentType, array $additionalHeaders = [], $authenticate = true)
+    public function put(string $relativePath, ?string $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
     {
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
@@ -130,7 +131,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function postJson($relativePath, $data, array $additionalHeaders = [], $authenticate = true)
+    public function postJson(string $relativePath, $data, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
     {
         if (! is_array($data) || ! $data instanceof \stdClass) {
             throw new BokbasenApiClientException('Data must be array or stdClass');
@@ -153,7 +154,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function get($relativePath, $accept = null, array $additionalHeaders = [], $authenticate = true)
+    public function get(string $relativePath, ?string $accept = null, array $additionalHeaders = [], $authenticate = true): ResponseInterface
     {
         if (! empty($accept)) {
             $additionalHeaders['Accept'] = $accept;
@@ -172,7 +173,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function executeHttpRequest($method, array $additionalHeaders, $encodedData, $completeUrl, $authenticate = true)
+    public function executeHttpRequest(string $method, array $additionalHeaders, ?string $encodedData, string $completeUrl, bool $authenticate = true): ResponseInterface
     {
         if ($authenticate) {
             $headers = $this->makeHeadersArray($additionalHeaders);
@@ -194,7 +195,7 @@ class Client
      *
      * @param HttpClient $httpClient            
      */
-    public function setHttpClient(HttpClient $httpClient = null)
+    public function setHttpClient(HttpClient $httpClient = null): void
     {
         if (is_null($httpClient)) {
             $this->httpClient = HttpClientDiscovery::find();
@@ -210,7 +211,7 @@ class Client
      *
      * @param LoggerInterface $logger            
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger = null): void
     {
         $this->logger = $logger;
     }
@@ -221,7 +222,7 @@ class Client
      * @param string $relativePath            
      * @return string
      */
-    protected function buildUrl($relativePath)
+    protected function buildUrl($relativePath): string
     {
         return $this->baseUrl . $relativePath;
     }
@@ -229,9 +230,9 @@ class Client
     /**
      * Create a message factory
      *
-     * @return \Http\Discovery\MessageFactory
+     * @return \Http\Message\MessageFactory
      */
-    protected function getMessageFactory()
+    protected function getMessageFactory(): MessageFactory
     {
         if (is_null($this->messageFactory)) {
             $this->messageFactory = MessageFactoryDiscovery::find();
@@ -244,7 +245,7 @@ class Client
      *
      * @param array $additionalHeaders            
      */
-    protected function makeHeadersArray(array $additionalHeaders = [])
+    protected function makeHeadersArray(array $additionalHeaders = []): array
     {
         return array_merge($this->login->getAuthHeadersAsArray(), $additionalHeaders);
     }
@@ -256,7 +257,7 @@ class Client
      * @param ResponseInterface $response            
      * @return boolean
      */
-    protected function needReAuthentication(ResponseInterface $response)
+    protected function needReAuthentication(ResponseInterface $response): bool
     {
         if ($response->getStatusCode() == 401 && ! $this->login->isReAuthAttempted()) {
             $this->login->reAuthenticate();
