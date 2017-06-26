@@ -92,7 +92,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function post(string $relativePath, string $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
+    public function post(string $relativePath, $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
     {
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
@@ -112,7 +112,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function put(string $relativePath, ?string $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
+    public function put(string $relativePath, $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
     {
         if (! empty($contentType)) {
             $additionalHeaders['Content-Type'] = $contentType;
@@ -173,7 +173,7 @@ class Client
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function executeHttpRequest(string $method, array $additionalHeaders, ?string $encodedData, string $completeUrl, bool $authenticate = true): ResponseInterface
+    public function executeHttpRequest(string $method, array $additionalHeaders, $encodedData, string $completeUrl, bool $authenticate = true): ResponseInterface
     {
         if ($authenticate) {
             $headers = $this->makeHeadersArray($additionalHeaders);
