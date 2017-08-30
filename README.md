@@ -15,7 +15,7 @@ try{
 ```
 
 ```php
-use Bokbasen\ApiClient;
+use Bokbasen\ApiClient\Client;
 use Bokbasen\ApiClient\HttpRequestOptions;
 try{
 	//pass the base URL of the API you are interacting with. You can also pass a logger and a custom http client. Any request made through the API returns an instance of \Psr\Http\Message\ResponseInterface. All of these API calls will include the necessary authentication headers.
