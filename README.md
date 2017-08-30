@@ -7,9 +7,13 @@ First create a Login object [see php-sdk-auth for details](https://github.com/Bo
 
 ```php
 use Bokbasen\Auth\Login;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+
 try{
-	$login = new Login('my_username', 'my_password');
-} catch(\Exception $e){
+   // This example is using a file cache for the TGT, you can replace this with any PSR-6 compatible cache. Always using caching in production to avoid performance penalty of creating and deleting tokens
+	$cache = new FilesystemAdapter();
+	$login = new Login('my_username', 'my_password',Login::URL_PROD, $cache);
+} catch(\Throwable $e){
 	//error handling
 }
 ```
@@ -35,11 +39,7 @@ try{
 	//Execute PUT request
 	$data = '<test>3</test>'
 	$response = $client->put('/xmlReceiver',$data,HttpRequestOptions::CONTENT_TYPE_XML);
-} catch(\Exception $e){
+} catch(\Throwable $e){
 	//error handling
 }
 ```
-
-
-
-
