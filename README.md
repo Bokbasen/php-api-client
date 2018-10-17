@@ -29,7 +29,10 @@ use Bokbasen\Auth\Login;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 try {
-    // This example is using a file cache for the TGT, you can replace this with any PSR-6 compatible cache. Always using caching in production to avoid performance penalty of creating and deleting tokens
+    /* This example is using a file cache for the TGT, you can replace this with any PSR-6 
+        compatible cache. Always using caching in production to avoid performance penalty of 
+        creating and deleting tokens.
+    */
     $cache = new FilesystemAdapter();
     $login = new Login('username', 'password', Login::URL_PROD, $cache);
 } catch(\Throwable $e) {
@@ -43,7 +46,11 @@ use Bokbasen\ApiClient\HttpRequestOptions;
 use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
 
 try {
-    // Pass the base URL of the API you are interacting with. You can also pass a logger and a custom http client. Any request made through the API returns an instance of \Psr\Http\Message\ResponseInterface. All of these API calls will include the necessary authentication headers.
+    /* Pass the base URL of the API you are interacting with. You can also pass a logger 
+        and a custom http client. Any request made through the API returns an instance 
+        of \Psr\Http\Message\ResponseInterface.  All of these API calls will include the 
+        necessary authentication headers.
+    */
     $client = new Client($login, 'https://loan.api.boknett.no');
     
     // Execute get request, it is recommended to explicitly set accept parameter
