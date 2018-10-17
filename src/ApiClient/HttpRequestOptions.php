@@ -22,7 +22,6 @@ namespace Bokbasen\ApiClient;
  */
 class HttpRequestOptions
 {
-
     const CONTENT_TYPE_HAL = 'application/hal+json';
 
     const CONTENT_TYPE_JSON = 'application/json';

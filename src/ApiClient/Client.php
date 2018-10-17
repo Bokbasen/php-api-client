@@ -1,12 +1,16 @@
 <?php
+
 namespace Bokbasen\ApiClient;
 
+use Get;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\MessageFactoryDiscovery;
 use Http\Client\HttpClient;
 use Http\Message\MessageFactory;
 use Psr\Http\Message\ResponseInterface;
 use Bokbasen\Auth\Login;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
 use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
 
@@ -24,6 +28,7 @@ use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
  * Generic HTTP client for use against Bokbasen APIs.
  *
@@ -31,239 +36,198 @@ use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
  */
 class Client
 {
-
     /**
-     *
-     * @var \Http\Client\HttpClient
-     */
-    protected $httpClient;
-
-    /**
-     *
-     * @var \Http\Discovery\MessageFactory
-     */
-    protected $messageFactory;
-
-    /**
-     *
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     protected $logger;
 
     /**
-     *
-     * @var \Bokbasen\Auth\Login
+     * @var Login
      */
     protected $login;
 
     /**
-     *
+     * @var Caller
+     */
+    protected $caller;
+
+    /**
      * @var string
      */
     protected $baseUrl;
 
     /**
-     *
-     * @param Login $login            
-     * @param string $baseUrl            
-     * @param LoggerInterface $logger            
-     * @param HttpClient $httpClient            
+     * @param Login  $login
+     * @param string $baseUrl
      */
-    public function __construct(Login $login, string $baseUrl, LoggerInterface $logger = null, HttpClient $httpClient = null)
+    public function __construct(Login $login, string $baseUrl)
     {
         $this->login = $login;
         $this->baseUrl = $baseUrl;
-        $this->setLogger($logger);
-        $this->setHttpClient($httpClient);
-        
-        if (empty($this->baseUrl) || strpos($this->baseUrl, 'http') !== 0) {
-            throw new BokbasenApiClientException('Base URL invalid or empty');
+    }
+
+    protected function getCaller(): Caller
+    {
+        if (!$this->caller) {
+            $this->caller = new Caller();
         }
+
+        return $this->caller;
+    }
+
+    /**
+     * @throws BokbasenApiClientException
+     */
+    protected function call(string $method, string $path, $body = null, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    {
+        $headers = $authenticate ? $this->addAuthenticationHeaders($headers) : $headers;
+        $url = $this->prependBaseUrl($path);
+
+        if ($this->logger) {
+            $this->logger->debug(sprintf('Executing HTTP %s request to %s with data %s.', $method, $url, $body));
+        }
+
+        return $this->getCaller()->request($method, $url, $headers, $body);
     }
 
     /**
      * Execute POST request
      *
-     * @param string $relativePath            
-     * @param string $encodedData            
-     * @param string $contentType            
-     * @param array $additionalHeaders            
-     * @param bool $authenticate            
+     * @param string                               $path
+     * @param resource|string|StreamInterface|null $body
+     * @param array                                $headers
+     * @param bool                                 $authenticate
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
+     *
+     * @throws BokbasenApiClientException
      */
-    public function post(string $relativePath, $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
+    public function post(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
     {
-        if (! empty($contentType)) {
-            $additionalHeaders['Content-Type'] = $contentType;
-        }
-        
-        return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_POST, $additionalHeaders, $encodedData, $this->buildUrl($relativePath), $authenticate);
+        return $this->call(
+            HttpRequestOptions::HTTP_METHOD_POST,
+            $path,
+            $body,
+            $headers,
+            $authenticate
+        );
     }
 
     /**
-     * Execute POST request
+     * Execute PUT request
      *
-     * @param string $relativePath            
-     * @param string $encodedData            
-     * @param string $contentType            
-     * @param array $additionalHeaders            
-     * @param bool $authenticate            
+     * @param string                               $path
+     * @param resource|string|StreamInterface|null $body
+     * @param array                                $headers
+     * @param bool                                 $authenticate
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
+     *
+     * @throws BokbasenApiClientException
      */
-    public function put(string $relativePath, $encodedData, ?string $contentType, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
+    public function put(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
     {
-        if (! empty($contentType)) {
-            $additionalHeaders['Content-Type'] = $contentType;
-        }
-        
-        return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_PUT, $additionalHeaders, $encodedData, $this->buildUrl($relativePath));
+        return $this->call(
+            HttpRequestOptions::HTTP_METHOD_PUT,
+            $path,
+            $body,
+            $headers,
+            $authenticate
+        );
+    }
+
+    /**
+     * Execute GET request
+     *
+     * @param string                               $path
+     * @param resource|string|StreamInterface|null $body
+     * @param array                                $headers
+     * @param bool                                 $authenticate
+     *
+     * @return ResponseInterface
+     *
+     * @throws BokbasenApiClientException
+     */
+    public function get(string $path, array $headers = [], $authenticate = true): ResponseInterface
+    {
+        return $this->call(
+            HttpRequestOptions::HTTP_METHOD_GET,
+            $path,
+            null,
+            $headers,
+            $authenticate
+        );
+    }
+
+    /**
+     * Execute PATCH request
+     *
+     * @param string                               $path
+     * @param resource|string|StreamInterface|null $body
+     * @param array                                $headers
+     * @param bool                                 $authenticate
+     *
+     * @return ResponseInterface
+     *
+     * @throws BokbasenApiClientException
+     */
+    public function patch(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    {
+        return $this->call(
+            HttpRequestOptions::HTTP_METHOD_PATCH,
+            $path,
+            $body,
+            $headers,
+            $authenticate
+        );
     }
 
     /**
      * Special endpoint for posting json, sets correct content type header and encodes data as json
      *
-     * @param string $relativePath            
-     * @param \stdClass|array $data            
-     * @param array $additionalHeaders            
-     * @param bool $authenticate            
+     * @param string          $path
+     * @param array|\stdClass $body
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
+     *
+     * @throws BokbasenApiClientException
      */
-    public function postJson(string $relativePath, $data, array $additionalHeaders = [], bool $authenticate = true): ResponseInterface
+    public function postJson(string $path, $body): ResponseInterface
     {
-        if (! is_array($data) || ! $data instanceof \stdClass) {
+        if (!is_array($body) && !$body instanceof \stdClass) {
             throw new BokbasenApiClientException('Data must be array or stdClass');
         }
-        $data = json_encode($data);
-        
-        if ($data === false) {
+
+        $body = json_encode($body);
+
+        if ($body === false) {
             throw new BokbasenApiClientException('Not able to convert data to json');
         }
-        
-        return $this->post($relativePath, $data, HttpRequestOptions::CONTENT_TYPE_JSON);
+
+        return $this->post(
+            $path,
+            $body,
+            [
+                'Content-Type' => HttpRequestOptions::CONTENT_TYPE_JSON,
+            ]
+        );
     }
 
     /**
-     *
-     * @param string $relativePath            
-     * @param string $data            
-     * @param string $contentType            
-     * @param bool $authenticate            
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function get(string $relativePath, ?string $accept = null, array $additionalHeaders = [], $authenticate = true): ResponseInterface
-    {
-        if (! empty($accept)) {
-            $additionalHeaders['Accept'] = $accept;
-        }
-        
-        return $this->executeHttpRequest(HttpRequestOptions::HTTP_METHOD_GET, $additionalHeaders, null, $this->buildUrl($relativePath));
-    }
-
-    /**
-     *
-     * @param string $method            
-     * @param string $contentType            
-     * @param string $encodedData            
-     * @param string $completeUrl            
-     * @param bool $authenticate            
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function executeHttpRequest(string $method, array $additionalHeaders, $encodedData, string $completeUrl, bool $authenticate = true): ResponseInterface
-    {
-        if ($authenticate) {
-            $headers = $this->makeHeadersArray($additionalHeaders);
-        } else {
-            $headers = $additionalHeaders;
-        }
-        
-        if (! is_null($this->logger)) {
-            $this->logger->debug(sprintf('Executing HTTP %s request to %s with data %s ', $method, $completeUrl, $encodedData));
-        }
-        
-        $request = $this->getMessageFactory()->createRequest($method, $completeUrl, $headers, $encodedData);
-        
-        return $this->httpClient->sendRequest($request);
-    }
-
-    /**
-     * Set HTTP client, if none is given autodetection is attempted
-     *
-     * @param HttpClient $httpClient            
-     */
-    public function setHttpClient(HttpClient $httpClient = null): void
-    {
-        if (is_null($httpClient)) {
-            $this->httpClient = HttpClientDiscovery::find();
-            if (! is_null($this->logger)) {
-                $this->logger->debug('HttpClientDiscovery::find() used to find HTTP client in ' . __CLASS__);
-            }
-        } else {
-            $this->httpClient = $httpClient;
-        }
-    }
-
-    /**
-     *
-     * @param LoggerInterface $logger            
+     * @param LoggerInterface $logger
      */
     public function setLogger(LoggerInterface $logger = null): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * Build URL joining path with base URL
-     *
-     * @param string $relativePath            
-     * @return string
-     */
-    protected function buildUrl($relativePath): string
+    protected function prependBaseUrl(string $path): string
     {
-        return $this->baseUrl . $relativePath;
+        return sprintf('%s%s', $this->baseUrl, $path);
     }
 
-    /**
-     * Create a message factory
-     *
-     * @return \Http\Message\MessageFactory
-     */
-    protected function getMessageFactory(): MessageFactory
+    protected function addAuthenticationHeaders(array $existingHeaders = []): array
     {
-        if (is_null($this->messageFactory)) {
-            $this->messageFactory = MessageFactoryDiscovery::find();
-        }
-        
-        return $this->messageFactory;
-    }
-
-    /**
-     *
-     * @param array $additionalHeaders            
-     */
-    protected function makeHeadersArray(array $additionalHeaders = []): array
-    {
-        return array_merge($this->login->getAuthHeadersAsArray(), $additionalHeaders);
-    }
-
-    /**
-     * Check if the auth client should attempt reauthetication based on response.
-     * Will only run reauth once.
-     *
-     * @param ResponseInterface $response            
-     * @return boolean
-     */
-    protected function needReAuthentication(ResponseInterface $response): bool
-    {
-        if ($response->getStatusCode() == 401 && ! $this->login->isReAuthAttempted()) {
-            $this->login->reAuthenticate();
-            return true;
-        } else {
-            return false;
-        }
+        return array_merge($this->login->getAuthHeadersAsArray(), $existingHeaders);
     }
 }
