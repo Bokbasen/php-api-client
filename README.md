@@ -10,6 +10,20 @@ The HTTP client is simple in use and you must implement API spesific functionali
 
 First create a Login object [see php-sdk-auth for details](https://github.com/Bokbasen/php-sdk-auth)
 
+## Installation
+
+```
+$ composer require bokbasen/php-api-client
+```
+
+We are using HttpClientDiscovery so you'll need to require a PSR-7 compatible implementation, e.g.;
+
+```
+$ composer require nyholm/psr7
+```
+
+## Usage
+
 ```php
 use Bokbasen\Auth\Login;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -50,4 +64,10 @@ try {
 } catch(BokbasenApiClientException $e){
     //error handling
 }
+```
+
+## Tests
+
+```
+$ ./vendor/bin/phpunit
 ```
