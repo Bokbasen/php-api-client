@@ -9,6 +9,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
+use Http\Mock\Client as HttpClient;
 
 class ClientTest extends TestCase
 {
@@ -26,9 +27,19 @@ class ClientTest extends TestCase
         return $stub;
     }
 
+    private function getClient($url = 'http://client.test')
+    {
+        $client = new Client($this->getLogin(), $url);
+
+        $httpClient = new HttpClient();
+        $client->setHttpClient($httpClient);
+
+        return $client;
+    }
+
     public function testSetLogger()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $logger = new Logger('first', [$handler = new TestHandler()]);
         $client->setLogger($logger);
@@ -44,7 +55,7 @@ class ClientTest extends TestCase
 
     public function testGet()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $response = $client->get('/getpath');
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -55,7 +66,7 @@ class ClientTest extends TestCase
 
     public function testPost()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $response = $client->post('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -66,7 +77,7 @@ class ClientTest extends TestCase
 
     public function testPut()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $response = $client->put('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -77,7 +88,7 @@ class ClientTest extends TestCase
 
     public function testPatch()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $response = $client->patch('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -88,7 +99,7 @@ class ClientTest extends TestCase
 
     public function testPostJson()
     {
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
 
         $response = $client->postJson('/path', ['my' => 'body']);
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -101,7 +112,7 @@ class ClientTest extends TestCase
     {
         $this->expectException(BokbasenApiClientException::class);
 
-        $client = new Client($this->getLogin(), 'http://client.test');
+        $client = $this->getClient();
         $client->postJson('/path', "invalid body");
     }
 
@@ -109,7 +120,12 @@ class ClientTest extends TestCase
     {
         $this->expectException(BokbasenApiClientException::class);
 
-        $client = new Client($this->getLogin(), '////');
+        $client = new Client($this->getLogin(), '???');
+
+        $httpClient = new HttpClient();
+        $httpClient->addException(new \Exception());
+        $client->setHttpClient($httpClient);
+
         $client->get('???');
     }
 }

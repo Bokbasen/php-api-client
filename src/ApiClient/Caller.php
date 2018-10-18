@@ -61,4 +61,9 @@ class Caller
 
         return $this->messageFactory;
     }
+
+    public function setHttpClient(HttpClient $httpClient): void
+    {
+        $this->httpClient = $httpClient;
+    }
 }
