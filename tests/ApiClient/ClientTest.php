@@ -9,7 +9,6 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\NullLogger;
 
 class ClientTest extends TestCase
 {

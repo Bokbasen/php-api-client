@@ -36,8 +36,7 @@
     "php-http/guzzle6-adapter": "^1.1",
     "php-http/message": "^1.0",
     "symfony/var-dumper": "^4.1",
-    "monolog/monolog": "^1.23",
-    "guzzlehttp/psr7": "^1.0"
+    "monolog/monolog": "^1.23"
   },
   "config": {
     "sort-packages": true,
