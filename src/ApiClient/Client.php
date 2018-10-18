@@ -2,15 +2,9 @@
 
 namespace Bokbasen\ApiClient;
 
-use Get;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\MessageFactoryDiscovery;
-use Http\Client\HttpClient;
-use Http\Message\MessageFactory;
 use Psr\Http\Message\ResponseInterface;
 use Bokbasen\Auth\Login;
 use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriInterface;
 use Psr\Log\LoggerInterface;
 use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
 
@@ -78,7 +72,7 @@ class Client
     /**
      * @throws BokbasenApiClientException
      */
-    protected function call(string $method, string $path, $body = null, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    protected function call(string $method, string $path, $body = null, array $headers = [], bool $authenticate = true): ResponseInterface
     {
         $headers = $authenticate ? $this->addAuthenticationHeaders($headers) : $headers;
         $url = $this->prependBaseUrl($path);
@@ -125,7 +119,7 @@ class Client
      *
      * @throws BokbasenApiClientException
      */
-    public function put(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    public function put(string $path, $body, array $headers = [], bool $authenticate = true): ResponseInterface
     {
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_PUT,
@@ -171,7 +165,7 @@ class Client
      *
      * @throws BokbasenApiClientException
      */
-    public function patch(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    public function patch(string $path, $body, array $headers = [], bool $authenticate = true): ResponseInterface
     {
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_PATCH,
