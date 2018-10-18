@@ -44,19 +44,19 @@ class Caller
         }
     }
 
-    protected function getHttpClient(HttpClient $httpClient = null): HttpClient
+    protected function getHttpClient(): HttpClient
     {
         if (!$this->httpClient) {
-            $this->httpClient = $httpClient ?: HttpClientDiscovery::find();
+            $this->httpClient = HttpClientDiscovery::find();
         }
 
         return $this->httpClient;
     }
 
-    protected function getMessageFactory(MessageFactory $messageFactory = null): MessageFactory
+    protected function getMessageFactory(): MessageFactory
     {
         if (!$this->messageFactory) {
-            $this->messageFactory = $messageFactory ?: MessageFactoryDiscovery::find();
+            $this->messageFactory = MessageFactoryDiscovery::find();
         }
 
         return $this->messageFactory;
