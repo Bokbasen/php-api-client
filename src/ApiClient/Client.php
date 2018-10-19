@@ -78,14 +78,12 @@ class Client
     /**
      * @throws BokbasenApiClientException
      */
-    protected function call(string $method, string $path, $body = null, array $headers = [], bool $authenticate = true): ResponseInterface
+    protected function call(string $method, string $path, array $headers = [], $body = null, bool $authenticate = true): ResponseInterface
     {
         $headers = $authenticate ? $this->addAuthenticationHeaders($headers) : $headers;
         $url = $this->prependBaseUrl($path);
 
-        if ($this->logger) {
-            $this->logger->debug(sprintf('Executing HTTP %s request to %s with data %s.', $method, $url, $body));
-        }
+        $this->logRequest($method, $url, $body);
 
         return $this->getCaller()->request($method, $url, $headers, $body);
     }
@@ -107,8 +105,8 @@ class Client
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_POST,
             $path,
-            $body,
             $headers,
+            $body,
             $authenticate
         );
     }
@@ -130,8 +128,8 @@ class Client
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_PUT,
             $path,
-            $body,
             $headers,
+            $body,
             $authenticate
         );
     }
@@ -153,8 +151,8 @@ class Client
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_GET,
             $path,
-            null,
             $headers,
+            null,
             $authenticate
         );
     }
@@ -176,8 +174,8 @@ class Client
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_PATCH,
             $path,
-            $body,
             $headers,
+            $body,
             $authenticate
         );
     }
@@ -185,23 +183,19 @@ class Client
     /**
      * Special endpoint for posting json, sets correct content type header and encodes data as json
      *
-     * @param string          $path
-     * @param array|\stdClass $body
+     * @param string $path
+     * @param array  $body
      *
      * @return ResponseInterface
      *
      * @throws BokbasenApiClientException
      */
-    public function postJson(string $path, $body): ResponseInterface
+    public function postJson(string $path, array $body): ResponseInterface
     {
-        if (!is_array($body) && !$body instanceof \stdClass) {
-            throw new BokbasenApiClientException('Data must be array or stdClass');
-        }
-
         $body = json_encode($body);
 
         if ($body === false) {
-            throw new BokbasenApiClientException('Not able to convert data to json');
+            throw new BokbasenApiClientException('Unable to convert data to json');
         }
 
         return $this->post(
@@ -229,5 +223,16 @@ class Client
     protected function addAuthenticationHeaders(array $existingHeaders = []): array
     {
         return array_merge($this->login->getAuthHeadersAsArray(), $existingHeaders);
+    }
+
+    protected function logRequest(string $method, string $url, $body = null): void
+    {
+        if ($this->logger) {
+            $message = sprintf('Executing HTTP %s request to %s', $method, $url);
+            if (!empty($body)) {
+                $message .= sprintf(' with data %s', $body);
+            }
+            $this->logger->debug($message);
+        }
     }
 }

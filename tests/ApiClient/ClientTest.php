@@ -44,11 +44,11 @@ class ClientTest extends TestCase
         $logger = new Logger('first', [$handler = new TestHandler()]);
         $client->setLogger($logger);
 
-        $client->get('/path');
+        $client->post('/path', json_encode(["data" => "data"]));
         list($record) = $handler->getRecords();
 
         $this->assertEquals(
-            'Executing HTTP GET request to http://client.test/path with data .',
+            'Executing HTTP POST request to http://client.test/path with data {"data":"data"}',
             $record['message']
         );
     }
@@ -104,16 +104,8 @@ class ClientTest extends TestCase
         $response = $client->postJson('/path', ['my' => 'body']);
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->postJson('/path', (object) ['my' => 'body'], ["Content-Type" => "application/json"],false);
+        $response = $client->postJson('/path', ['my' => 'body'], ["Content-Type" => "application/json"],false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
-    }
-
-    public function testPostJsonInvalidArgument()
-    {
-        $this->expectException(BokbasenApiClientException::class);
-
-        $client = $this->getClient();
-        $client->postJson('/path', "invalid body");
     }
 
     public function testClientException()
