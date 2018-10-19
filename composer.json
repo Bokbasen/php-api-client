@@ -3,7 +3,7 @@
   "license": "MIT",
   "type": "library",
   "description": "Generic PHP API client for Bokbasen's API",
-  "homepage": "https://bokbasen.no",
+  "homepage": "https://www.bokbasen.no",
   "autoload": {
     "psr-4": {
       "Bokbasen\\": "src"
@@ -18,6 +18,10 @@
     {
       "name": "Ketil Stadskleiv",
       "email": "ketil@bokbasen.no"
+    },
+    {
+      "name": "Harald Tollefsen",
+      "email": "harald@bokbasen.no"
     }
   ],
   "require": {
