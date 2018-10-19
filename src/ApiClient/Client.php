@@ -100,7 +100,7 @@ class Client
      *
      * @throws BokbasenApiClientException
      */
-    public function post(string $path, $body, ?array $headers = [], bool $authenticate = true): ResponseInterface
+    public function post(string $path, $body, array $headers = [], bool $authenticate = true): ResponseInterface
     {
         return $this->call(
             HttpRequestOptions::HTTP_METHOD_POST,
