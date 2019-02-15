@@ -3,6 +3,7 @@
 namespace Bokbasen\ApiClient;
 
 use Bokbasen\ApiClient\Exceptions\MissingParameterException;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 
 abstract class AuthenticatedApi
@@ -52,9 +53,9 @@ abstract class AuthenticatedApi
         return $this->getClient()->post($path, $body, $headers, $authenticate);
     }
 
-    public function patch(string $path, array $headers = [], bool $authenticate = true): ResponseInterface
+    public function patch(string $path, $body, array $headers = [], bool $authenticate = true): ResponseInterface
     {
-        return $this->getClient()->patch($path, $headers, $authenticate);
+        return $this->getClient()->patch($path, $body, $headers, $authenticate);
     }
 
     public function put(string $path, $body, array $headers = [], $authenticate = true): ResponseInterface
