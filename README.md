@@ -55,7 +55,7 @@ try {
     
     // Execute get request, it is recommended to explicitly set accept parameter
     $headers = ['Accept' => HttpRequestOptions::CONTENT_TYPE_JSON];
-    $response = $client->get('/path', $headers, $authenticate);
+    $response = $client->get('/path', $headers);
     
     // Execute POST request with json data
     $response = $client->postJson('/path', $body, $headers);
