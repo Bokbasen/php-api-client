@@ -58,16 +58,16 @@ try {
     $response = $client->get('/path', $headers, $authenticate);
     
     // Execute POST request with json data
-    $response = $client->postJson('/path', $body, $headers, $authenticate);
+    $response = $client->postJson('/path', $body, $headers);
     
     // Execute POST request 
-    $response = $client->post('/path', $body, $headers, $authenticate);
+    $response = $client->post('/path', $body, $headers);
     
     // Execute PUT request
-    $response = $client->put('/path', $body, $headers, $authenticate);
+    $response = $client->put('/path', $body, $headers);
     
     // Execute PATCH request
-    $response = $client->patch('/path', $body, $headers, $authenticate);
+    $response = $client->patch('/path', $body, $headers);
 } catch(BokbasenApiClientException $e){
     //error handling
 }
