@@ -96,7 +96,7 @@ class Client
      * Execute POST request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -119,7 +119,7 @@ class Client
      * Execute PUT request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -142,7 +142,7 @@ class Client
      * Execute GET request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -165,7 +165,7 @@ class Client
      * Execute PATCH request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *

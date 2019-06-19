@@ -44,7 +44,7 @@ class Caller
      * @param string                               $method
      * @param string|UriInterface                  $url
      * @param array                                $headers
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      *
      * @return ResponseInterface
      *
