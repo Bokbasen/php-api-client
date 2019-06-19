@@ -85,7 +85,11 @@ class Client
 
         $this->logRequest($method, $url, $body);
 
-        return $this->getCaller()->request($method, $url, $headers, $body);
+        $response = $this->getCaller()->request($method, $url, $headers, $body);
+
+        $this->logResponse($response);
+
+        return $response;
     }
 
     /**
@@ -232,7 +236,25 @@ class Client
             if (!empty($body)) {
                 $message .= sprintf(' with data %s', $body);
             }
-            $this->logger->debug($message);
+            $this->logger->info($message);
+        }
+    }
+
+    protected function logResponse(ResponseInterface $response): void
+    {
+        if ($this->logger) {
+            $logItem = [
+                'code' => $response->getStatusCode(),
+                'headers' => $response->getHeaders(),
+            ];
+
+            if (!empty($body)) {
+                $logItem['body'] = $response->getBody()->getContents();
+            }
+
+            $this->logger->info(json_encode($logItem));
+
+            $response->getBody()->rewind();
         }
     }
 }
