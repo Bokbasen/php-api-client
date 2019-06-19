@@ -28,23 +28,24 @@
     "php": ">=7.1",
     "ext-json": "*",
     "bokbasen/php-sdk-auth": "^2",
-    "psr/http-message": "^1.0",
     "php-http/client-implementation": "^1.0",
-    "php-http/httplug": "^1.0|^2.0",
+    "php-http/httplug": "^2.0",
     "php-http/message-factory": "^1.0",
     "php-http/discovery": "^1.0"
   },
   "require-dev": {
-    "guzzlehttp/psr7": "^1.0",
     "monolog/monolog": "^1.23",
-    "php-http/message": "^1.0",
     "php-http/mock-client": "^1.0",
+    "php-http/message": "^1.0",
+    "nyholm/psr7": "^1.1",
+    "guzzlehttp/psr7": "^1.0",
+    "php-http/guzzle6-adapter": "^2.0",
     "phpunit/phpunit": "^6"
   },
   "config": {
     "sort-packages": true,
     "branch-alias": {
-      "dev-master": "2.x-dev"
+      "dev-master": "3.x-dev"
     }
   }
 }

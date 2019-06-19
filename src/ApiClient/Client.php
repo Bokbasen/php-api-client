@@ -78,21 +78,25 @@ class Client
     /**
      * @throws BokbasenApiClientException
      */
-    protected function call(string $method, string $path, array $headers = [], $body = null, bool $authenticate = true): ResponseInterface
+    protected function call(string $method, string $path, array $headers = [], ?string $body = null, bool $authenticate = true): ResponseInterface
     {
         $headers = $authenticate ? $this->addAuthenticationHeaders($headers) : $headers;
         $url = $this->prependBaseUrl($path);
 
         $this->logRequest($method, $url, $body);
 
-        return $this->getCaller()->request($method, $url, $headers, $body);
+        $response = $this->getCaller()->request($method, $url, $headers, $body);
+
+        $this->logResponse($response);
+
+        return $response;
     }
 
     /**
      * Execute POST request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -115,7 +119,7 @@ class Client
      * Execute PUT request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -138,7 +142,7 @@ class Client
      * Execute GET request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -161,7 +165,7 @@ class Client
      * Execute PATCH request
      *
      * @param string                               $path
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      * @param array                                $headers
      * @param bool                                 $authenticate
      *
@@ -225,14 +229,42 @@ class Client
         return array_merge($this->login->getAuthHeadersAsArray(), $existingHeaders);
     }
 
-    protected function logRequest(string $method, string $url, $body = null): void
+    protected function logRequest(string $method, string $url, ?string $body = null): void
     {
         if ($this->logger) {
-            $message = sprintf('Executing HTTP %s request to %s', $method, $url);
+            $logItem = [
+                'method' => $method,
+                'url' => $url,
+            ];
+
             if (!empty($body)) {
-                $message .= sprintf(' with data %s', $body);
+                $logItem['body'] = (string) $body;
             }
-            $this->logger->debug($message);
+            $this->logger->info(json_encode($logItem));
+        }
+    }
+
+    protected function logResponse(ResponseInterface $response): void
+    {
+        if ($this->logger) {
+            $logItem = [
+                'code' => $response->getStatusCode(),
+                'headers' => $response->getHeaders(),
+            ];
+
+            try {
+                $body = $response->getBody()->getContents();
+            } catch (\RuntimeException $e) {
+                $this->logger->warning('Unable to extract body in logger');
+            }
+
+            if (!empty($body)) {
+                $logItem['body'] = $body;
+            }
+
+            $this->logger->info(json_encode($logItem));
+
+            $response->getBody()->rewind();
         }
     }
 }

@@ -3,31 +3,48 @@
 namespace Bokbasen\ApiClient;
 
 use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
-use Http\Client\HttpClient;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\MessageFactoryDiscovery;
-use Http\Message\MessageFactory;
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 class Caller
 {
     /**
-     * @var HttpClient
+     * @var ClientInterface
      */
     private $httpClient;
 
     /**
-     * @var MessageFactory
+     * @var RequestFactoryInterface
      */
-    private $messageFactory;
+    private $requestFactory;
+
+    /**
+     * @var StreamFactoryInterface
+     */
+    private $streamFactory;
+
+    public function __construct(
+        ClientInterface $httpClient = null,
+        RequestFactoryInterface $requestFactory = null,
+        StreamFactoryInterface $streamFactory = null
+    ) {
+        $this->httpClient = $httpClient ?: Psr18ClientDiscovery::find();
+        $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();
+        $this->streamFactory = $streamFactory ?: Psr17FactoryDiscovery::findStreamFactory();
+    }
 
     /**
      * @param string                               $method
      * @param string|UriInterface                  $url
      * @param array                                $headers
-     * @param resource|string|StreamInterface|null $body
+     * @param string|StreamInterface|null $body
      *
      * @return ResponseInterface
      *
@@ -36,33 +53,27 @@ class Caller
     public function request(string $method, $url, array $headers = [], $body = null): ResponseInterface
     {
         try {
-            return $this->getHttpClient()->sendRequest(
-                $this->getMessageFactory()->createRequest($method, $url, $headers, $body)
-            );
-        } catch (\Http\Client\Exception | \Exception $e) {
+            $request = $this->requestFactory->createRequest($method, $url);
+
+            if (!empty($headers)) {
+                foreach ($headers as $name => $value) {
+                    $request = $request->withHeader($name, $value);
+                }
+            }
+
+            if ($body !== null) {
+                $request = $request->withBody(
+                    $this->streamFactory->createStream($body)
+                );
+            }
+
+            return $this->httpClient->sendRequest($request);
+        } catch (ClientExceptionInterface | \Exception $e) {
             throw new BokbasenApiClientException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
-    protected function getHttpClient(): HttpClient
-    {
-        if (!$this->httpClient) {
-            $this->httpClient = HttpClientDiscovery::find();
-        }
-
-        return $this->httpClient;
-    }
-
-    protected function getMessageFactory(): MessageFactory
-    {
-        if (!$this->messageFactory) {
-            $this->messageFactory = MessageFactoryDiscovery::find();
-        }
-
-        return $this->messageFactory;
-    }
-
-    public function setHttpClient(HttpClient $httpClient): void
+    public function setHttpClient(ClientInterface $httpClient): void
     {
         $this->httpClient = $httpClient;
     }

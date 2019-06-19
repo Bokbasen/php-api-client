@@ -7,6 +7,7 @@ use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
 use Bokbasen\Auth\Login;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Http\Mock\Client as HttpClient;
@@ -21,7 +22,7 @@ class ClientTest extends TestCase
         $stub->method('getAuthHeadersAsArray')
             ->willReturn([
                 'Authorization' => 'Boknett TGT-123123-123123-123123',
-                'Date' => gmdate(Login::HTTP_HEADER_DATE_FORMAT)
+                'Date'          => gmdate(Login::HTTP_HEADER_DATE_FORMAT),
             ]);
 
         return $stub;
@@ -32,6 +33,7 @@ class ClientTest extends TestCase
         $client = new Client($this->getLogin(), $url);
 
         $httpClient = new HttpClient();
+        $httpClient->addResponse(new Response(200, [], '{"body": "example"}'));
         $client->setHttpClient($httpClient);
 
         return $client;
@@ -45,11 +47,15 @@ class ClientTest extends TestCase
         $client->setLogger($logger);
 
         $client->post('/path', json_encode(["data" => "data"]));
-        list($record) = $handler->getRecords();
+        list($request, $response) = $handler->getRecords();
 
         $this->assertEquals(
-            'Executing HTTP POST request to http://client.test/path with data {"data":"data"}',
-            $record['message']
+            '{"method":"POST","url":"http:\/\/client.test\/path","body":"{\"data\":\"data\"}"}',
+            $request['message']
+        );
+        $this->assertEquals(
+            '{"code":200,"headers":[]}',
+            $response['message']
         );
     }
 
@@ -60,7 +66,7 @@ class ClientTest extends TestCase
         $response = $client->get('/getpath');
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->get('/getpath', ["Content-Type" => "application/json"],false);
+        $response = $client->get('/getpath', ["Content-Type" => "application/json"], false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
@@ -71,7 +77,7 @@ class ClientTest extends TestCase
         $response = $client->post('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->post('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"],false);
+        $response = $client->post('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"], false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
@@ -82,7 +88,7 @@ class ClientTest extends TestCase
         $response = $client->put('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->put('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"],false);
+        $response = $client->put('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"], false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
@@ -93,7 +99,7 @@ class ClientTest extends TestCase
         $response = $client->patch('/path', json_encode(['my' => 'body']));
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->patch('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"],false);
+        $response = $client->patch('/path', json_encode(['my' => 'body']), ["Content-Type" => "application/json"], false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
@@ -104,7 +110,7 @@ class ClientTest extends TestCase
         $response = $client->postJson('/path', ['my' => 'body']);
         $this->assertInstanceOf(ResponseInterface::class, $response);
 
-        $response = $client->postJson('/path', ['my' => 'body'], ["Content-Type" => "application/json"],false);
+        $response = $client->postJson('/path', ['my' => 'body'], ["Content-Type" => "application/json"], false);
         $this->assertInstanceOf(ResponseInterface::class, $response);
     }
 
