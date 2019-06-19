@@ -3,38 +3,37 @@
 namespace Bokbasen\ApiClient;
 
 use Bokbasen\ApiClient\Exceptions\BokbasenApiClientException;
-use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
-use Http\Message\StreamFactory;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 class Caller
 {
     /**
-     * @var HttpClient
+     * @var ClientInterface
      */
     private $httpClient;
-
-    /**
-     * @var StreamFactory
-     */
-    private $streamFactory;
 
     /**
      * @var RequestFactoryInterface
      */
     private $requestFactory;
 
+    /**
+     * @var StreamFactoryInterface
+     */
+    private $streamFactory;
+
     public function __construct(
         ClientInterface $httpClient = null,
         RequestFactoryInterface $requestFactory = null,
-        StreamInterface $streamFactory = null
+        StreamFactoryInterface $streamFactory = null
     ) {
         $this->httpClient = $httpClient ?: Psr18ClientDiscovery::find();
         $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();

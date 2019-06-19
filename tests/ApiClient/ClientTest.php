@@ -45,11 +45,15 @@ class ClientTest extends TestCase
         $client->setLogger($logger);
 
         $client->post('/path', json_encode(["data" => "data"]));
-        list($record) = $handler->getRecords();
+        list($request, $response) = $handler->getRecords();
 
         $this->assertEquals(
-            'Executing HTTP POST request to http://client.test/path with data {"data":"data"}',
-            $record['message']
+            '{"method":"POST","url":"http:\/\/client.test\/path","body":"{\"data\":\"data\"}"}',
+            $request['message']
+        );
+        $this->assertEquals(
+            '{"code":200,"headers":[]}',
+            $response['message']
         );
     }
 

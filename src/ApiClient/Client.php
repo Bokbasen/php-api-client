@@ -78,7 +78,7 @@ class Client
     /**
      * @throws BokbasenApiClientException
      */
-    protected function call(string $method, string $path, array $headers = [], $body = null, bool $authenticate = true): ResponseInterface
+    protected function call(string $method, string $path, array $headers = [], ?string $body = null, bool $authenticate = true): ResponseInterface
     {
         $headers = $authenticate ? $this->addAuthenticationHeaders($headers) : $headers;
         $url = $this->prependBaseUrl($path);
@@ -229,14 +229,18 @@ class Client
         return array_merge($this->login->getAuthHeadersAsArray(), $existingHeaders);
     }
 
-    protected function logRequest(string $method, string $url, $body = null): void
+    protected function logRequest(string $method, string $url, ?string $body = null): void
     {
         if ($this->logger) {
-            $message = sprintf('Executing HTTP %s request to %s', $method, $url);
+            $logItem = [
+                'method' => $method,
+                'url' => $url,
+            ];
+
             if (!empty($body)) {
-                $message .= sprintf(' with data %s', $body);
+                $logItem['body'] = (string) $body;
             }
-            $this->logger->info($message);
+            $this->logger->info(json_encode($logItem));
         }
     }
 
@@ -248,8 +252,10 @@ class Client
                 'headers' => $response->getHeaders(),
             ];
 
+            $body = $response->getBody()->getContents();
+
             if (!empty($body)) {
-                $logItem['body'] = $response->getBody()->getContents();
+                $logItem['body'] = $body;
             }
 
             $this->logger->info(json_encode($logItem));
