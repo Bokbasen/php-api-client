@@ -252,7 +252,11 @@ class Client
                 'headers' => $response->getHeaders(),
             ];
 
-            $body = $response->getBody()->getContents();
+            try {
+                $body = $response->getBody()->getContents();
+            } catch (\RuntimeException $e) {
+                $this->logger->warning('Unable to extract body in logger');
+            }
 
             if (!empty($body)) {
                 $logItem['body'] = $body;
