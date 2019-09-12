@@ -19,7 +19,7 @@ $ composer require bokbasen/php-api-client
 We are using HttpClientDiscovery so you'll need to require a PSR-7 compatible implementation, e.g.;
 
 ```
-$ composer require nyholm/psr7
+$ composer require php-http/guzzle6-adapter
 ```
 
 ## Usage
