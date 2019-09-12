@@ -12,15 +12,18 @@ First create a Login object [see php-sdk-auth for details](https://github.com/Bo
 
 ## Installation
 
-```
-$ composer require bokbasen/php-api-client
-```
-
 We are using HttpClientDiscovery so you'll need to require a PSR-7 compatible implementation, e.g.;
 
 ```
 $ composer require php-http/guzzle6-adapter
 ```
+
+Then add our package:
+
+```
+$ composer require bokbasen/php-api-client
+```
+
 
 ## Usage
 
