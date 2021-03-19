@@ -187,14 +187,9 @@ class Client
     /**
      * Special endpoint for posting json, sets correct content type header and encodes data as json
      *
-     * @param string $path
-     * @param array  $body
-     *
-     * @return ResponseInterface
-     *
      * @throws BokbasenApiClientException
      */
-    public function postJson(string $path, array $body): ResponseInterface
+    public function postJson(string $path, array $body, array $headers = [], bool $authenticate = true): ResponseInterface
     {
         $body = json_encode($body);
 
@@ -202,12 +197,18 @@ class Client
             throw new BokbasenApiClientException('Unable to convert data to json');
         }
 
+        $headers = array_merge(
+            [
+                'Content-Type' => HttpRequestOptions::CONTENT_TYPE_JSON,
+            ],
+            $headers
+        );
+
         return $this->post(
             $path,
             $body,
-            [
-                'Content-Type' => HttpRequestOptions::CONTENT_TYPE_JSON,
-            ]
+            $headers,
+            $authenticate
         );
     }
 
