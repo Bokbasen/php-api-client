@@ -27,7 +27,7 @@
   "require": {
     "php": ">=7.1",
     "ext-json": "*",
-    "bokbasen/php-sdk-auth": "^2",
+    "bokbasen/php-sdk-auth": "^2|^3",
     "php-http/client-implementation": "^1.0",
     "php-http/httplug": "^2.0",
     "php-http/message-factory": "^1.0",
