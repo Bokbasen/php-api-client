@@ -2,7 +2,7 @@
 
 namespace Bokbasen\ApiClient;
 
-use Http\Client\HttpClient;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Bokbasen\Auth\Login;
 use Psr\Http\Message\StreamInterface;
@@ -70,7 +70,7 @@ class Client
         return $this->caller;
     }
 
-    public function setHttpClient(HttpClient $httpClient): void
+    public function setHttpClient(ClientInterface $httpClient): void
     {
         $this->getCaller()->setHttpClient($httpClient);
     }
